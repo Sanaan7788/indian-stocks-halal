@@ -23,3 +23,6 @@ yarn-error.log*
 # --- NOTES ---
 # We are intentionally NOT ignoring 'screenshots/' and 'index.html'
 # because you need them to show up on your GitHub Pages website.
+
+# --- IGNORE SCREENSHOTS ---
+screenshots/

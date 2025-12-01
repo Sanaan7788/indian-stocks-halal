@@ -1,15 +1,13 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS",
-    "strict": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true
+  "name": "indian-stocks-halal",
+  "version": "1.0.0",
+  "description": "Automated Halal Screener for Nifty 50 Stocks",
+  "scripts": {
+    "start": "ts-node halal-bot.ts"
   },
   "dependencies": {
-    "playwright": "^1.57.0"
-  },
-  "devDependencies": {
-    "@types/node": "^24.10.1"
+    "playwright": "^1.49.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
   }
 }

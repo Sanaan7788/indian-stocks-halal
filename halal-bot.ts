@@ -1,4 +1,3 @@
-
 import { chromium, Page } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -13,7 +12,7 @@ const CONFIG = {
     HTML_OUTPUT: 'index.html',
     WAIT_TIME: 1500,
     CLOUDINARY_FOLDER: 'indian_stocks_halal',
-    TEST_LIMIT: 0 // Set to 0 for FULL RUN or any other number for testing limited stocks
+    TEST_LIMIT: 10 // 0 = Full Production Run
 };
 
 cloudinary.config({
@@ -80,7 +79,7 @@ async function processStock(page: Page, symbol: string) {
     let musaffaName = "-";
     let status = "SKIPPED";
     let imgUrl = "No Image";
-    let pageUrl = "https://musaffa.com"; // Default URL
+    let pageUrl = "https://musaffa.com";
 
     try {
         console.log(`\n🔍 Processing: ${symbol}`);
@@ -108,7 +107,6 @@ async function processStock(page: Page, symbol: string) {
         }
         if (!clicked) await dropdownItems.first().click({ force: true });
 
-        // Capture the actual URL of the stock page
         pageUrl = page.url();
 
         try {
@@ -133,7 +131,6 @@ async function processStock(page: Page, symbol: string) {
         console.log("   ✅ Uploaded!");
     } catch (e) { console.log("   ⚠️ Upload failed"); }
 
-    // Return the URL as part of the result
     return { symbol, musaffaName, status, imgUrl, pageUrl };
 }
 
@@ -154,15 +151,19 @@ function generateHtmlReport() {
         <title>Nifty 50 Halal Screener</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
-            :root { --primary: #0f172a; --secondary: #64748b; --bg-color: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success-bg: #dcfce7; --success-text: #166534; --danger-bg: #fee2e2; --danger-text: #991b1b; --warning-bg: #fef3c7; --warning-text: #92400e; }
+            :root { --primary: #0f172a; --secondary: #64748b; --bg-color: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success-bg: #dcfce7; --success-text: #166534; --danger-bg: #fee2e2; --danger-text: #991b1b; --warning-bg: #fef3c7; --warning-text: #92400e; --active-filter: #0f172a; --active-text: #ffffff; }
             body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--primary); margin: 0; padding: 40px 20px; }
             .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
-            header { background: var(--primary); color: white; padding: 2rem; display: flex; justify-content: space-between; align-items: center; }
+            header { background: var(--primary); color: white; padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
             .header-content h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
             .header-content p { margin: 4px 0 0 0; color: #94a3b8; font-size: 0.875rem; }
             .update-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; display: flex; align-items: center; gap: 8px; }
             .update-dot { width: 8px; height: 8px; background-color: #4ade80; border-radius: 50%; box-shadow: 0 0 8px #4ade80; }
-            table { width: 100%; border-collapse: collapse; text-align: left; }
+            .filter-bar { padding: 20px 24px 0 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+            .filter-btn { padding: 8px 20px; border: 1px solid var(--border); border-radius: 9999px; background: white; color: var(--secondary); cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease; font-family: 'Inter', sans-serif; }
+            .filter-btn:hover { background: #f8fafc; border-color: var(--secondary); }
+            .filter-btn.active { background: var(--active-filter); color: var(--active-text); border-color: var(--active-filter); }
+            table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
             th { background-color: #f8fafc; padding: 16px 24px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--secondary); border-bottom: 1px solid var(--border); }
             td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 0.925rem; }
             .badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
@@ -173,14 +174,11 @@ function generateHtmlReport() {
             .thumb-wrapper { width: 60px; height: 40px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
             .thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
             .thumb-wrapper:hover { transform: scale(1.05); }
-            
-            /* Symbol Link Style */
-            .symbol-link { font-weight: 700; color: #2563eb; text-decoration: none; transition: color 0.2s; }
-            .symbol-link:hover { color: #1d4ed8; text-decoration: underline; }
-            
+            .symbol-link { font-weight: 700; color: #2563eb; text-decoration: none; }
+            .symbol-link:hover { text-decoration: underline; }
             .name-text { color: var(--secondary); }
-            .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); }
-            .modal-content { display: block; max-width: 90%; max-height: 90vh; margin: 2vh auto; border-radius: 8px; }
+            .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); }
+            .modal-content { display: block; max-width: 90%; max-height: 90vh; margin: 2vh auto; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
             .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
         </style>
     </head>
@@ -196,6 +194,15 @@ function generateHtmlReport() {
                     Updated: ${dateStr} at ${timeStr}
                 </div>
             </header>
+
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterTable('ALL', this)">All</button>
+                <button class="filter-btn" onclick="filterTable('HALAL', this)">Halal</button>
+                <button class="filter-btn" onclick="filterTable('NOT', this)">Not Halal</button>
+                <button class="filter-btn" onclick="filterTable('DOUBTFUL', this)">Doubtful</button>
+                <button class="filter-btn" onclick="filterTable('SKIPPED', this)">Skipped</button>
+            </div>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -207,14 +214,12 @@ function generateHtmlReport() {
     let counter = 1;
     for (let i = 1; i < csvData.length; i++) {
         const row = csvData[i].split(',');
-        if (row.length < 5) continue; // Now checking for 5 columns
+        if (row.length < 5) continue;
         const [sym, name, status, img, url] = row;
 
         let badgeClass = status;
         if (status.includes('NOT')) badgeClass = 'NOT';
-
         const displaySymbol = sym.replace('.NS', '');
-
         const link = (url && url.startsWith('http')) ? url : `https://musaffa.com`;
 
         html += `
@@ -223,13 +228,7 @@ function generateHtmlReport() {
                 <td><a href="${link}" target="_blank" class="symbol-link">${displaySymbol} ↗</a></td>
                 <td><div class="name-text">${name.replace(/"/g, '')}</div></td>
                 <td><span class="badge ${badgeClass}">${status}</span></td>
-                <td>
-                    ${img.startsWith('http') ?
-                `<div class="thumb-wrapper" onclick="openModal('${img}')">
-                        <img src="${img}" alt="Evidence">
-                     </div>` :
-                '<span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>'}
-                </td>
+                <td>${img.startsWith('http') ? `<div class="thumb-wrapper" onclick="openModal('${img}')"><img src="${img}" alt="Evidence"></div>` : '<span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>'}</td>
             </tr>`;
     }
 
@@ -246,6 +245,41 @@ function generateHtmlReport() {
             }
             function closeModal() { document.getElementById("myModal").style.display = "none"; }
             document.addEventListener('keydown', function(event) { if (event.key === "Escape") closeModal(); });
+
+            function filterTable(category, btn) {
+                // Update Buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Filter Rows
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const badge = row.querySelector('.badge');
+                    if (badge) {
+                        const statusText = badge.innerText;
+                        
+                        if (category === 'ALL') {
+                            row.style.display = '';
+                        } 
+                        else if (category === 'HALAL') {
+                            // STRICT CHECK: Must be 'HALAL' and NOT contain 'NOT'
+                            if (statusText.includes('HALAL') && !statusText.includes('NOT')) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        } 
+                        else {
+                            // Standard check for NOT, DOUBTFUL, SKIPPED
+                            if (statusText.includes(category)) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    }
+                });
+            }
         </script>
     </body></html>`;
 
@@ -255,7 +289,6 @@ function generateHtmlReport() {
 
 async function main() {
     const symbols = loadNiftySymbols();
-
     fs.writeFileSync(CONFIG.CSV_OUTPUT, 'Symbol,Name,Status,Screenshot,PageURL\n');
 
     const browser = await chromium.launch({ headless: false });

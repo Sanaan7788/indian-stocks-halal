@@ -7,15 +7,19 @@
         <title>Nifty 50 Halal Screener</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
-            :root { --primary: #0f172a; --secondary: #64748b; --bg-color: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success-bg: #dcfce7; --success-text: #166534; --danger-bg: #fee2e2; --danger-text: #991b1b; --warning-bg: #fef3c7; --warning-text: #92400e; }
+            :root { --primary: #0f172a; --secondary: #64748b; --bg-color: #f1f5f9; --card-bg: #ffffff; --border: #e2e8f0; --success-bg: #dcfce7; --success-text: #166534; --danger-bg: #fee2e2; --danger-text: #991b1b; --warning-bg: #fef3c7; --warning-text: #92400e; --active-filter: #0f172a; --active-text: #ffffff; }
             body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--primary); margin: 0; padding: 40px 20px; }
             .container { max-width: 1200px; margin: 0 auto; background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
-            header { background: var(--primary); color: white; padding: 2rem; display: flex; justify-content: space-between; align-items: center; }
+            header { background: var(--primary); color: white; padding: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
             .header-content h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
             .header-content p { margin: 4px 0 0 0; color: #94a3b8; font-size: 0.875rem; }
             .update-badge { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; display: flex; align-items: center; gap: 8px; }
             .update-dot { width: 8px; height: 8px; background-color: #4ade80; border-radius: 50%; box-shadow: 0 0 8px #4ade80; }
-            table { width: 100%; border-collapse: collapse; text-align: left; }
+            .filter-bar { padding: 20px 24px 0 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+            .filter-btn { padding: 8px 20px; border: 1px solid var(--border); border-radius: 9999px; background: white; color: var(--secondary); cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease; font-family: 'Inter', sans-serif; }
+            .filter-btn:hover { background: #f8fafc; border-color: var(--secondary); }
+            .filter-btn.active { background: var(--active-filter); color: var(--active-text); border-color: var(--active-filter); }
+            table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 20px; }
             th { background-color: #f8fafc; padding: 16px 24px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--secondary); border-bottom: 1px solid var(--border); }
             td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 0.925rem; }
             .badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
@@ -26,14 +30,11 @@
             .thumb-wrapper { width: 60px; height: 40px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease; }
             .thumb-wrapper img { width: 100%; height: 100%; object-fit: cover; }
             .thumb-wrapper:hover { transform: scale(1.05); }
-            
-            /* Symbol Link Style */
-            .symbol-link { font-weight: 700; color: #2563eb; text-decoration: none; transition: color 0.2s; }
-            .symbol-link:hover { color: #1d4ed8; text-decoration: underline; }
-            
+            .symbol-link { font-weight: 700; color: #2563eb; text-decoration: none; }
+            .symbol-link:hover { text-decoration: underline; }
             .name-text { color: var(--secondary); }
-            .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); }
-            .modal-content { display: block; max-width: 90%; max-height: 90vh; margin: 2vh auto; border-radius: 8px; }
+            .modal { display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); }
+            .modal-content { display: block; max-width: 90%; max-height: 90vh; margin: 2vh auto; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
             .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
         </style>
     </head>
@@ -46,9 +47,18 @@
                 </div>
                 <div class="update-badge">
                     <div class="update-dot"></div>
-                    Updated: Monday, December 1, 2025 at 08:36 PM
+                    Updated: Monday, December 1, 2025 at 09:22 PM
                 </div>
             </header>
+
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterTable('ALL', this)">All</button>
+                <button class="filter-btn" onclick="filterTable('HALAL', this)">Halal</button>
+                <button class="filter-btn" onclick="filterTable('NOT', this)">Not Halal</button>
+                <button class="filter-btn" onclick="filterTable('DOUBTFUL', this)">Doubtful</button>
+                <button class="filter-btn" onclick="filterTable('SKIPPED', this)">Skipped</button>
+            </div>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -61,519 +71,70 @@
                 <td><a href="https://musaffa.com/stock/ADANIENT.NS" target="_blank" class="symbol-link">ADANIENT ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642261/indian_stocks_halal/ADANIENT.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642261/indian_stocks_halal/ADANIENT.NS.png" alt="Evidence">
-                     </div>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645674/indian_stocks_halal/ADANIENT.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645674/indian_stocks_halal/ADANIENT.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">2</td>
                 <td><a href="https://musaffa.com/stock/M&M.NS" target="_blank" class="symbol-link">M&M ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">3</td>
                 <td><a href="https://musaffa.com/stock/ADANIPORTS.NS" target="_blank" class="symbol-link">ADANIPORTS ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge DOUBTFUL">DOUBTFUL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645689/indian_stocks_halal/ADANIPORTS.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645689/indian_stocks_halal/ADANIPORTS.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">4</td>
                 <td><a href="https://musaffa.com/stock/KOTAKBANK.NS" target="_blank" class="symbol-link">KOTAKBANK ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645697/indian_stocks_halal/KOTAKBANK.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645697/indian_stocks_halal/KOTAKBANK.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">5</td>
                 <td><a href="https://musaffa.com/stock/EICHERMOT.NS" target="_blank" class="symbol-link">EICHERMOT ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645706/indian_stocks_halal/EICHERMOT.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645706/indian_stocks_halal/EICHERMOT.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">6</td>
                 <td><a href="https://musaffa.com/stock/SBIN.NS" target="_blank" class="symbol-link">SBIN ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645713/indian_stocks_halal/SBIN.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645713/indian_stocks_halal/SBIN.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">7</td>
                 <td><a href="https://musaffa.com/stock/TECHM.NS" target="_blank" class="symbol-link">TECHM ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645721/indian_stocks_halal/TECHM.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645721/indian_stocks_halal/TECHM.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">8</td>
                 <td><a href="https://musaffa.com/stock/HINDALCO.NS" target="_blank" class="symbol-link">HINDALCO ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645729/indian_stocks_halal/HINDALCO.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645729/indian_stocks_halal/HINDALCO.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">9</td>
                 <td><a href="https://musaffa.com/stock/SUNPHARMA.NS" target="_blank" class="symbol-link">SUNPHARMA ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645737/indian_stocks_halal/SUNPHARMA.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645737/indian_stocks_halal/SUNPHARMA.NS.png" alt="Evidence"></div></td>
             </tr>
             <tr>
                 <td style="color: #94a3b8; text-align: center;">10</td>
                 <td><a href="https://musaffa.com/stock/RELIANCE.NS" target="_blank" class="symbol-link">RELIANCE ↗</a></td>
                 <td><div class="name-text">-</div></td>
                 <td><span class="badge DOUBTFUL">DOUBTFUL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">11</td>
-                <td><a href="https://musaffa.com/stock/MAXHEALTH.NS" target="_blank" class="symbol-link">MAXHEALTH ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <span style="color:#cbd5e1; font-size: 0.8rem;">No Data</span>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">12</td>
-                <td><a href="https://musaffa.com/stock/HINDUNILVR.NS" target="_blank" class="symbol-link">HINDUNILVR ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642656/indian_stocks_halal/HINDUNILVR.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642656/indian_stocks_halal/HINDUNILVR.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">13</td>
-                <td><a href="https://musaffa.com/stock/APOLLOHOSP.NS" target="_blank" class="symbol-link">APOLLOHOSP ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642664/indian_stocks_halal/APOLLOHOSP.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642664/indian_stocks_halal/APOLLOHOSP.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">14</td>
-                <td><a href="https://musaffa.com/stock/TITAN.NS" target="_blank" class="symbol-link">TITAN ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642672/indian_stocks_halal/TITAN.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642672/indian_stocks_halal/TITAN.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">15</td>
-                <td><a href="https://musaffa.com/stock/JSWSTEEL.NS" target="_blank" class="symbol-link">JSWSTEEL ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642681/indian_stocks_halal/JSWSTEEL.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642681/indian_stocks_halal/JSWSTEEL.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">16</td>
-                <td><a href="https://musaffa.com/stock/BAJFINANCE.NS" target="_blank" class="symbol-link">BAJFINANCE ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642688/indian_stocks_halal/BAJFINANCE.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642688/indian_stocks_halal/BAJFINANCE.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">17</td>
-                <td><a href="https://musaffa.com/stock/WIPRO.NS" target="_blank" class="symbol-link">WIPRO ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642696/indian_stocks_halal/WIPRO.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642696/indian_stocks_halal/WIPRO.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">18</td>
-                <td><a href="https://musaffa.com/stock/TATASTEEL.NS" target="_blank" class="symbol-link">TATASTEEL ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642704/indian_stocks_halal/TATASTEEL.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642704/indian_stocks_halal/TATASTEEL.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">19</td>
-                <td><a href="https://musaffa.com/stock/JIOFIN.NS" target="_blank" class="symbol-link">JIOFIN ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642713/indian_stocks_halal/JIOFIN.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642713/indian_stocks_halal/JIOFIN.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">20</td>
-                <td><a href="https://musaffa.com/stock/HCLTECH.NS" target="_blank" class="symbol-link">HCLTECH ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642721/indian_stocks_halal/HCLTECH.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642721/indian_stocks_halal/HCLTECH.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">21</td>
-                <td><a href="https://musaffa.com/stock/MARUTI.NS" target="_blank" class="symbol-link">MARUTI ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642729/indian_stocks_halal/MARUTI.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642729/indian_stocks_halal/MARUTI.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">22</td>
-                <td><a href="https://musaffa.com/stock/LT.NS" target="_blank" class="symbol-link">LT ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642737/indian_stocks_halal/LT.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642737/indian_stocks_halal/LT.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">23</td>
-                <td><a href="https://musaffa.com/stock/CIPLA.NS" target="_blank" class="symbol-link">CIPLA ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642746/indian_stocks_halal/CIPLA.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642746/indian_stocks_halal/CIPLA.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">24</td>
-                <td><a href="https://musaffa.com/stock/HDFCBANK.NS" target="_blank" class="symbol-link">HDFCBANK ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642755/indian_stocks_halal/HDFCBANK.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642755/indian_stocks_halal/HDFCBANK.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">25</td>
-                <td><a href="https://musaffa.com/stock/INDIGO.NS" target="_blank" class="symbol-link">INDIGO ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642763/indian_stocks_halal/INDIGO.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642763/indian_stocks_halal/INDIGO.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">26</td>
-                <td><a href="https://musaffa.com/stock/ETERNAL.NS" target="_blank" class="symbol-link">ETERNAL ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge DOUBTFUL">DOUBTFUL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642772/indian_stocks_halal/ETERNAL.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642772/indian_stocks_halal/ETERNAL.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">27</td>
-                <td><a href="https://musaffa.com/stock/DRREDDY.NS" target="_blank" class="symbol-link">DRREDDY ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642780/indian_stocks_halal/DRREDDY.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642780/indian_stocks_halal/DRREDDY.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">28</td>
-                <td><a href="https://musaffa.com/stock/ASIANPAINT.NS" target="_blank" class="symbol-link">ASIANPAINT ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642788/indian_stocks_halal/ASIANPAINT.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642788/indian_stocks_halal/ASIANPAINT.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">29</td>
-                <td><a href="https://musaffa.com/stock/ITC.NS" target="_blank" class="symbol-link">ITC ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642796/indian_stocks_halal/ITC.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642796/indian_stocks_halal/ITC.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">30</td>
-                <td><a href="https://musaffa.com/stock/TCS.NS" target="_blank" class="symbol-link">TCS ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642804/indian_stocks_halal/TCS.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642804/indian_stocks_halal/TCS.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">31</td>
-                <td><a href="https://musaffa.com/stock/NTPC.NS" target="_blank" class="symbol-link">NTPC ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642812/indian_stocks_halal/NTPC.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642812/indian_stocks_halal/NTPC.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">32</td>
-                <td><a href="https://musaffa.com/stock/BEL.NS" target="_blank" class="symbol-link">BEL ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge DOUBTFUL">DOUBTFUL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642821/indian_stocks_halal/BEL.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642821/indian_stocks_halal/BEL.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">33</td>
-                <td><a href="https://musaffa.com/stock/GRASIM.NS" target="_blank" class="symbol-link">GRASIM ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642829/indian_stocks_halal/GRASIM.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642829/indian_stocks_halal/GRASIM.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">34</td>
-                <td><a href="https://musaffa.com/stock/COALINDIA.NS" target="_blank" class="symbol-link">COALINDIA ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642837/indian_stocks_halal/COALINDIA.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642837/indian_stocks_halal/COALINDIA.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">35</td>
-                <td><a href="https://musaffa.com/stock/ONGC.NS" target="_blank" class="symbol-link">ONGC ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642845/indian_stocks_halal/ONGC.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642845/indian_stocks_halal/ONGC.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">36</td>
-                <td><a href="https://musaffa.com" target="_blank" class="symbol-link">TMPV ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge SKIPPED">SKIPPED</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642850/indian_stocks_halal/TMPV.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642850/indian_stocks_halal/TMPV.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">37</td>
-                <td><a href="https://musaffa.com/stock/NESTLEIND.NS" target="_blank" class="symbol-link">NESTLEIND ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642859/indian_stocks_halal/NESTLEIND.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642859/indian_stocks_halal/NESTLEIND.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">38</td>
-                <td><a href="https://musaffa.com/stock/TRENT.NS" target="_blank" class="symbol-link">TRENT ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642867/indian_stocks_halal/TRENT.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642867/indian_stocks_halal/TRENT.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">39</td>
-                <td><a href="https://musaffa.com/stock/ICICIBANK.NS" target="_blank" class="symbol-link">ICICIBANK ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642875/indian_stocks_halal/ICICIBANK.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642875/indian_stocks_halal/ICICIBANK.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">40</td>
-                <td><a href="https://musaffa.com/stock/INFY.NS" target="_blank" class="symbol-link">INFY ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642885/indian_stocks_halal/INFY.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642885/indian_stocks_halal/INFY.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">41</td>
-                <td><a href="https://musaffa.com/stock/AXISBANK.NS" target="_blank" class="symbol-link">AXISBANK ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642892/indian_stocks_halal/AXISBANK.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642892/indian_stocks_halal/AXISBANK.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">42</td>
-                <td><a href="https://musaffa.com/stock/BAJAJFINSV.NS" target="_blank" class="symbol-link">BAJAJFINSV ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642901/indian_stocks_halal/BAJAJFINSV.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642901/indian_stocks_halal/BAJAJFINSV.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">43</td>
-                <td><a href="https://musaffa.com/stock/ULTRACEMCO.NS" target="_blank" class="symbol-link">ULTRACEMCO ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642910/indian_stocks_halal/ULTRACEMCO.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642910/indian_stocks_halal/ULTRACEMCO.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">44</td>
-                <td><a href="https://musaffa.com/stock/TATACONSUM.NS" target="_blank" class="symbol-link">TATACONSUM ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642918/indian_stocks_halal/TATACONSUM.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642918/indian_stocks_halal/TATACONSUM.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">45</td>
-                <td><a href="https://musaffa.com/stock/BHARTIARTL.NS" target="_blank" class="symbol-link">BHARTIARTL ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge HALAL">HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642926/indian_stocks_halal/BHARTIARTL.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642926/indian_stocks_halal/BHARTIARTL.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">46</td>
-                <td><a href="https://musaffa.com/stock/POWERGRID.NS" target="_blank" class="symbol-link">POWERGRID ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642934/indian_stocks_halal/POWERGRID.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642934/indian_stocks_halal/POWERGRID.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">47</td>
-                <td><a href="https://musaffa.com/stock/SBILIFE.NS" target="_blank" class="symbol-link">SBILIFE ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642941/indian_stocks_halal/SBILIFE.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642941/indian_stocks_halal/SBILIFE.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">48</td>
-                <td><a href="https://musaffa.com/stock/SHRIRAMFIN.NS" target="_blank" class="symbol-link">SHRIRAMFIN ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642950/indian_stocks_halal/SHRIRAMFIN.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642950/indian_stocks_halal/SHRIRAMFIN.NS.png" alt="Evidence">
-                     </div>
-                </td>
-            </tr>
-            <tr>
-                <td style="color: #94a3b8; text-align: center;">49</td>
-                <td><a href="https://musaffa.com/stock/HDFCLIFE.NS" target="_blank" class="symbol-link">HDFCLIFE ↗</a></td>
-                <td><div class="name-text">-</div></td>
-                <td><span class="badge NOT">NOT HALAL</span></td>
-                <td>
-                    <div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642958/indian_stocks_halal/HDFCLIFE.NS.png')">
-                        <img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764642958/indian_stocks_halal/HDFCLIFE.NS.png" alt="Evidence">
-                     </div>
-                </td>
+                <td><div class="thumb-wrapper" onclick="openModal('https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645745/indian_stocks_halal/RELIANCE.NS.png')"><img src="https://res.cloudinary.com/ddwslxy4t/image/upload/v1764645745/indian_stocks_halal/RELIANCE.NS.png" alt="Evidence"></div></td>
             </tr></tbody></table></div></div>
         <div id="myModal" class="modal" onclick="closeModal()">
             <span class="close-btn">&times;</span>
@@ -587,5 +148,40 @@
             }
             function closeModal() { document.getElementById("myModal").style.display = "none"; }
             document.addEventListener('keydown', function(event) { if (event.key === "Escape") closeModal(); });
+
+            function filterTable(category, btn) {
+                // Update Buttons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Filter Rows
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const badge = row.querySelector('.badge');
+                    if (badge) {
+                        const statusText = badge.innerText;
+                        
+                        if (category === 'ALL') {
+                            row.style.display = '';
+                        } 
+                        else if (category === 'HALAL') {
+                            // STRICT CHECK: Must be 'HALAL' and NOT contain 'NOT'
+                            if (statusText.includes('HALAL') && !statusText.includes('NOT')) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        } 
+                        else {
+                            // Standard check for NOT, DOUBTFUL, SKIPPED
+                            if (statusText.includes(category)) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    }
+                });
+            }
         </script>
     </body></html>

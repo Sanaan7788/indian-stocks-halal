@@ -35,7 +35,7 @@ function loadNiftySymbols(): string[] {
         let sym = cols[0]?.replace(/"/g, '').trim();
 
         if (sym && symbolPattern.test(sym) && sym !== 'NIFTY 50') {
-            validSymbols.push(sym);
+            validSymbols.push(`${sym}.NS`);
         }
     }
 

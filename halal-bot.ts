@@ -12,7 +12,7 @@ const CONFIG = {
     HTML_OUTPUT: 'index.html',
     WAIT_TIME: 1500,
     CLOUDINARY_FOLDER: 'indian_stocks_halal',
-    TEST_LIMIT: 10 // 0 = Full Production Run
+    TEST_LIMIT: 0 // 0 = Full Production Run
 };
 
 cloudinary.config({

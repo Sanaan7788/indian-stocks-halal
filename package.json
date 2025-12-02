@@ -6,6 +6,8 @@
     "start": "ts-node halal-bot.ts"
   },
   "dependencies": {
+    "cloudinary": "^2.8.0",
+    "dotenv": "^17.2.3",
     "playwright": "^1.49.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"

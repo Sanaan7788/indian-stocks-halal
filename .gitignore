@@ -1,6 +1,7 @@
 # --- Dependencies (Junk) ---
 node_modules/
 package-lock.json
+.env
 
 # --- OS System Files (Mac/Windows Junk) ---
 .DS_Store
